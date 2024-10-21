@@ -287,7 +287,7 @@ Swarm automatically converts functions into a JSON Schema that is passed into Ch
 - Docstrings are turned into the function `description`.
 - Parameters without default values are set to `required`.
 - Type hints are mapped to the parameter's `type` (and default to `string`).
-- Per-parameter descriptions are not explicitly supported, but should work similarly if just added in the docstring. (In the future docstring argument parsing may be added.)
+- Parameter descriptions are correctly parsed from the docstring, even if multiline or some of them is missing.
 
 ```python
 def greet(name, age: int, location: str = "New York"):
@@ -303,20 +303,70 @@ def greet(name, age: int, location: str = "New York"):
 
 ```javascript
 {
-   "type": "function",
-   "function": {
-      "name": "greet",
-      "description": "Greets the user. Make sure to get their name and age before calling.\n\nArgs:\n   name: Name of the user.\n   age: Age of the user.\n   location: Best place on earth.",
-      "parameters": {
-         "type": "object",
-         "properties": {
-            "name": {"type": "string"},
-            "age": {"type": "integer"},
-            "location": {"type": "string"}
-         },
-         "required": ["name", "age"]
-      }
-   }
+    'type': 'function',
+    'function': {
+        'name': 'greet',
+        'description': 'Greets the user. Make sure to get their name and age before calling.',
+        'parameters': {
+            'type': 'object',
+            'properties': {
+                'name': {
+                    'type': 'string',
+                    'description': 'Name of the user.'
+                },
+                'age': {
+                    'type': 'integer',
+                    'description': 'Age of the user.'
+                },
+                'location': {
+                    'type': 'string',
+                    'description': 'Best place on earth.'
+                }
+            },
+            'required': ['name', 'age']
+        }
+    }
+}
+```
+
+With multiline or missing arguments in the docstring:
+
+```python
+def edge_cases_greet(name, age: int, location: str = "New York"):
+    """Greets the user. Make sure to get their name and age before calling.
+
+    Args:
+       name: Name of the user.
+       Could be a multiline description.
+       location: Best place on earth.
+    """
+    print(f"Hello {name}, glad you are {age} in {location}!")
+```
+
+```javascript
+{
+    'type': 'function',
+    'function': {
+        'name': 'edge_cases_greet',
+        'description': 'Greets the user. Make sure to get their name and age before calling.',
+        'parameters': {
+            'type': 'object',
+            'properties': {
+                'name': {
+                    'type': 'string',
+                    'description': 'Name of the user. Could be a multiline description.'
+                },
+                'age': {
+                    'type': 'integer'
+                },
+                'location': {
+                    'type': 'string',
+                    'description': 'Best place on earth.'
+                }
+            },
+            'required': ['name', 'age']
+        }
+    }
 }
 ```
 
